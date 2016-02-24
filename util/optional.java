@@ -43,17 +43,14 @@ public class Optional<T> {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == null) {
-			return false;
-		}
 		if (!(obj instanceof Optional)) {
 			return false;
 		}
 		Optional other = (Optional) obj;
-		if (!isPresent()) {
-			return !other.isPresent();
+		if (isPresent() != other.isPresent()){
+			return false;
 		}
-		return value.equals(other.get());
+		return !isPresent() || value.equals(other.get());
 	}
 
 	@Override

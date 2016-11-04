@@ -1,4 +1,5 @@
-package com.thecoshman.util.reflection;
+package com.infonova.eircom.utils;
+//package com.thecoshman.util.reflection;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -146,6 +147,7 @@ class EvilReflection {
 
     /**
      * get a field from a type. It does not matter if you want it for static or an instance
+     * this will recurse up to the hierarchy to find the field in 'Object' if required
      * <P>
      * not recommended for direct use, this would be used internally by other methods
      * for setting the value of a field, consider using <code>set</code>
@@ -162,25 +164,33 @@ class EvilReflection {
                 return field;
             }
         }
-        throw new ReflectionException("unable to find the field '" + name + "' in type '" + type.getName() + "'");
+        if(Object.class.equals(type)) {
+            throw new ReflectionException("unable to find the field '" + name + "' in type '" + type.getName() + "'");
+        }
+        return getField(type.getSuperclass(), name);
     }
 
     /**
      * get a method from a type. This does not matter if you want it for static or an instance
+     * this will recurse up to the hierarchy to find the method in 'Object' if required
+     * <P>
      * not recommended for direct use, this would be used internally by other methods
      * for invoking methods, consider instead <code>invoke</code>
      *
-     * @param type       the type you wish to get a <code>Method</code> from
-     * @param methodName the name of <code>Method</code>, as appears in the source code
-     * @param argTypes   the types of the arguments, in the correct order, as they appear in the source code. Must be set, even if just an empty array
+     * @param type     the type you wish to get a <code>Method</code> from
+     * @param name     the name of <code>Method</code>, as appears in the source code
+     * @param argTypes the types of the arguments, in the correct order, as they appear in the source code. Must be set, even if just an empty array
      * @return the request <code>Method</code> if it was found
      */
-    public static Method getMethod(final Class<?> type, final String methodName, final Class<?>[] argTypes) {
+    public static Method getMethod(final Class<?> type, final String name, final Class<?>[] argTypes) {
         try {
-            return type.getDeclaredMethod(methodName, argTypes);
+            return type.getDeclaredMethod(name, argTypes);
         } catch (NoSuchMethodException | SecurityException e) {
-            throw new ReflectionException("Couldn't find the method", e);
+            if (Object.class.equals(type)) {
+                throw new ReflectionException("Couldn't find the method", e);
+            }
         }
+        return getMethod(type.getSuperclass(), name, argTypes);
     }
 
     /**
